@@ -17,6 +17,7 @@ export interface ICrudWebPartProps {
   description: string;
 }
 
+
 export default class CrudWebPart extends BaseClientSideWebPart<ICrudWebPartProps> {
 
 
@@ -28,24 +29,20 @@ export default class CrudWebPart extends BaseClientSideWebPart<ICrudWebPartProps
 <div>
   <table border="5" bgcolor="aqua">
     <tr>
-      <td>
-        Please Enter Software ID
-      </td>
+      <td>Please Enter Software ID </td>
       <td><input type="text" id="txtID"/></td>
         <td><input type="submit" id="btnRead" value="Read Details"/></td>
     </tr>
+
     <tr>
       <td>Software Title</td>
       <td><input type="text" id="txtSoftwareTitle"></td>
     </tr>
+
     <tr>
       <td>Software Name</td>
      <td><input type="text" id="txtSoftwareName"></td>
     </tr>
-
-
-
-
 
     <tr>
       <td>Software Vendor</td>
@@ -57,21 +54,25 @@ export default class CrudWebPart extends BaseClientSideWebPart<ICrudWebPartProps
         </select>
       </td>
     </tr>
+
     <tr>
       <td>Software Version</td>
       <td><input type="text" id="txtSoftwareVersion"></td>
     </tr>
+
     <tr>
       <td>Software Description</td>
       <td><textarea name="" id="txtSoftwareDescription" cols="40" rows="5"></textarea></td>
     </tr>
+
     <tr>
-      <td colspan="2" align="center"></td>
+      <td colspan="2" align="center">
       <input type="submit" id="btnSubmit" value="Insert Item"/>
       <input type="submit" id="btnUpdate" value="Update"/>
       <input type="submit" id="btnDelete" value="Delete"/>
-      <input type="submit" id="btnReadAll" value="Show All Records"/>
-      </tr>
+      </td>
+    </tr>
+
   </table>
   </div>
   <div id="divStatus"></div>
@@ -82,7 +83,36 @@ export default class CrudWebPart extends BaseClientSideWebPart<ICrudWebPartProps
 
       </div>`;
       this._bindEvents();
+      this.readAllItems();
   }
+  private readAllItems() {
+
+    this._getListItems().then(listItems => {
+      let html: string = '<table border="1" width="100%" style= "border-colapse: collapse;">';
+      html += '<tr><th>ID</th><th>Title</th><th>Software Name</th><th>Software Vendor</th><th>Software Version</th><th>Software Description</th></tr>';
+      listItems.forEach(item => {
+        html += `<tr><td>${item.Id}</td><td>${item.Title}</td><td>${item.SoftwareName}</td><td>${item.SoftwareVendor}</td><td>${item.SoftwareVersion}</td><td>${item.SoftwareDescription}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('divStatus').innerHTML = html;
+      const listContainer: Element = this.domElement.querySelector('#divStatus');
+
+      listContainer.innerHTML = html;
+    })
+
+  }
+
+private _getListItems(): Promise<ISoftwareListItem[]> {
+  const url: string = this.context.pageContext.site.absoluteUrl+"/_api/web/lists/getbytitle('SoftwareCatalog')/items";
+  return this.context.spHttpClient.get(url, SPHttpClient.configurations.v1)
+  .then(response => {
+    return response.json();
+  })
+  .then(json => {
+    return json.value;
+  }) as Promise<ISoftwareListItem[]>
+}
+
 
   private _bindEvents(): void {
     this.domElement.querySelector('#btnSubmit').addEventListener('click', ()=> {this.addListItem();});
